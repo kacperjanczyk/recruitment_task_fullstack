@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use Cassandra\Date;
 use DateTime;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -49,7 +50,7 @@ class ExchangeRatesController extends AbstractController
         try {
             $date = (new DateTime($dateString ?? 'now'));
             $date = $this->adjustDateIfWeekend($date);
-            $dateToday = (new DateTime('now'));
+            $dateToday = $this->adjustTodayDate();
             $dateToday = $this->adjustDateIfWeekend($dateToday);
 
             $selectedDateRates = $this->fetchExchangeRates($date);
@@ -122,5 +123,16 @@ class ExchangeRatesController extends AbstractController
         }
 
         return $date->format('Y-m-d');
+    }
+
+    private function adjustTodayDate(): DateTime
+    {
+        $now = new DateTime('now');
+
+        if ($now->format('H') < 12) {
+            $now->modify('-1 day');
+        }
+
+        return $now;
     }
 }
